@@ -11,10 +11,15 @@ CVImage img;
 MatOfRect faces;
 ArrayList<Ball> balls = new ArrayList<Ball>();
 
+boolean showFace = false;
+
 int frames = 0;
 int framesPerScore = 5;
 int score = 0;
 int bestScore = 0;
+String scoreS = "score: " + score;
+String scoreB = "bestscore: " + bestScore;
+
 //Cascadas para detección
 CascadeClassifier face,leye,reye;
 //Nombres de modelos
@@ -60,29 +65,32 @@ void draw() {
     //Detección y pintado de contenedores
     FaceDetect(gris);
     
-    gris.release();
-    
-    Rect [] facesArr = faces.toArray();
-    
-    String scoreS = "score: " + score;
-    fill(255);
-    textSize(24);
-    text(scoreS,width,height);
+    gris.release();    
+
     noStroke();
     fill(255);
     for (Ball ball : balls){
-      ball.move();
+      if(showFace){
+        ball.move();
+      }
       ball.paint();
-    }
-    if(checkBalls()){
-      print("pierdes");
-      //balls = new ArrayList<Ball>();
-    }
+    }  
+    
+    
+    scoreS = "score: " + score;
+    textSize(20);
+    text(scoreS,10,30);
+    text(scoreB,10,60);
   }
   
-  frames++;
-  if(frames % 5 == 0) score++;
-  if(frames % 200 == 1) balls.add(new Ball(50,5));
+  if(showFace){
+    frames++;
+    if(frames % 60 == 0) score++;
+    if(frames >= 120){
+      balls.add(new Ball(random(10,50),random(1,5)));
+      frames = 0;
+    }
+  }
 }
 
 void FaceDetect(Mat grey)
@@ -102,7 +110,23 @@ void FaceDetect(Mat grey)
   strokeWeight(4);
   for (Rect r : facesArr) {    
     rect(r.x, r.y, r.width, r.height);   
-   }
+  }
+  
+  //comprobamos si hay alguna cara para parar o no el juego
+  if(facesArr.length > 0){
+    showFace = true;
+  } else {
+    showFace = false;
+  }
+   
+  //llamamos al metodo que chequea si las pelotas chocan con la cara
+  if(checkBalls(facesArr)){
+    balls.clear();
+    bestScore = score;
+    scoreB = "bestscore: " + bestScore;
+    score = 0;
+    frames = 0;
+  }
   
   //Búsqueda de ojos
   MatOfRect leyes,reyes;
@@ -150,13 +174,13 @@ void FaceDetect(Mat grey)
   faces.release();
 }
 
-boolean checkBalls(){
-    Rect [] facesArr = faces.toArray();
-    print("sdljfldk  ");
+boolean checkBalls(Rect [] facesArr){
     for (Ball ball : balls){
       for(Rect r : facesArr){
-        if(ball.x >= r.x - r.width/2 && ball.x <= r.x + r.width/2){
-          if(ball.y >= r.y - r.height/2 && ball.y <= r.y + r.height/2) return true;
+        //r.x es la esquina superior izquierda
+        if(ball.x + ball.size/2 >= r.x && ball.x-ball.size/2 <= r.x + r.width){
+          //return true;
+          if(ball.y + ball.size/2 >= r.y && ball.y - ball.size/2 <= r.y + r.height) return true;
         }
       }
     }
