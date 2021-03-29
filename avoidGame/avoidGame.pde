@@ -11,6 +11,8 @@ CVImage img;
 MatOfRect faces;
 ArrayList<Ball> balls = new ArrayList<Ball>();
 
+boolean ShowMenu = true;
+boolean GameOver = false;
 boolean showFace = false;
 
 int frames = 0;
@@ -46,49 +48,66 @@ void setup() {
   reye = new CascadeClassifier(dataPath(reyeFile));
 }
 
-void draw() {  
-  if (cam.available()) {
+void draw() { 
+  if(ShowMenu){
     background(0);
-    cam.read();
-    
-    //Obtiene la imagen de la cámara
-    img.copy(cam, 0, 0, cam.width, cam.height, 
-    0, 0, img.width, img.height);
-    img.copyTo();
-    
-    //Imagen de grises
-    Mat gris = img.getGrey();
-    
-    //Imagen de entrada
-    image(img,0,0);
-    
-    //Detección y pintado de contenedores
-    FaceDetect(gris);
-    
-    gris.release();    
-
-    noStroke();
-    fill(255);
-    for (Ball ball : balls){
-      if(showFace){
-        ball.move();
-      }
-      ball.paint();
+    textAlign(CENTER);
+    textSize(30);
+    text("Avoid Game", width/2, 50);
+    if(GameOver){
+      textSize(15);
+      textAlign(CENTER, CENTER);
+      text("Perdiste\nScore: " + score + "\nBestScore: " + bestScore + "\n\nPulsa 'r' para reiniciar el juego\n\nPulsa 'Enter' para volver al menu", width/2,height/2);
+    } else {
+      textSize(15);
+      textAlign(CENTER, CENTER);
+      text("Resiste todo lo que puedas sin que los objetos te den en la cara\nSi escondes la cara y no se detecta,\nlas esferas y la puntuación se pararán,\npuedes usar eso para reposicionarte\n\nPulsa 'r' para reiniciar el juego\n\nPulsa 'Enter' para empezar", width/2,height/2);
     }  
-    
-    
-    scoreS = "score: " + score;
-    textSize(20);
-    text(scoreS,10,30);
-    text(scoreB,10,60);
-  }
-  
-  if(showFace){
-    frames++;
-    if(frames % 60 == 0) score++;
-    if(frames >= 120){
-      balls.add(new Ball(random(10,50),random(1,5)));
-      frames = 0;
+   } else {
+    if (cam.available()) {
+      background(0);
+      cam.read();
+      
+      //Obtiene la imagen de la cámara
+      img.copy(cam, 0, 0, cam.width, cam.height, 
+      0, 0, img.width, img.height);
+      img.copyTo();
+     
+      //Imagen de grises
+      Mat gris = img.getGrey();
+      
+      //Imagen de entrada
+      image(img,0,0);
+      
+      //Detección y pintado de contenedores
+      FaceDetect(gris);
+      
+      gris.release();    
+      
+      noStroke();
+      fill(255);
+      for (Ball ball : balls){
+        if(showFace){
+          ball.move();
+        }
+        ball.paint();
+      }  
+        
+        
+      scoreS = "score: " + score;
+      textSize(20);
+      textAlign(LEFT);
+      text(scoreS,10,30);
+      text(scoreB,10,60);
+    }
+      
+    if(showFace){
+      frames++;
+      if(frames % 60 == 0) score++;
+      if(frames >= 120){
+        balls.add(new Ball(random(10,50),random(1,5)));
+        frames = 0;
+      }
     }
   }
 }
@@ -121,11 +140,8 @@ void FaceDetect(Mat grey)
    
   //llamamos al metodo que chequea si las pelotas chocan con la cara
   if(checkBalls(facesArr)){
-    balls.clear();
-    bestScore = score;
-    scoreB = "bestscore: " + bestScore;
-    score = 0;
-    frames = 0;
+    ShowMenu = true;
+    GameOver = true;
   }
   
   //Búsqueda de ojos
@@ -187,3 +203,27 @@ boolean checkBalls(Rect [] facesArr){
     
     return false;
 }
+
+void resetGame(){
+    balls.clear();
+    if(score > bestScore)bestScore = score;
+    scoreB = "bestscore: " + bestScore;
+    score = 0;
+    frames = 0;
+}
+
+void keyPressed(){
+  if(key == 'r'){
+    ShowMenu = false;
+    GameOver = false;
+    resetGame();
+  }
+  if(keyCode == ENTER){
+    resetGame();
+    if(GameOver){
+      GameOver = false;
+    } else {
+      ShowMenu = false;
+    }
+  }
+}  
