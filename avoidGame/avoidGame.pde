@@ -15,8 +15,12 @@ boolean ShowMenu = true;
 boolean GameOver = false;
 boolean showFace = false;
 
+int framesPerBall = 180;
+int framesPerScore = 60;
+int ballMaxSize = 100;
+int ballMaxSpeed = 5;
+
 int frames = 0;
-int framesPerScore = 5;
 int score = 0;
 int bestScore = 0;
 String scoreS = "score: " + score;
@@ -103,9 +107,9 @@ void draw() {
       
     if(showFace){
       frames++;
-      if(frames % 60 == 0) score++;
-      if(frames >= 120){
-        balls.add(new Ball(random(10,50),random(1,5)));
+      if(frames % framesPerScore == 0) score++;
+      if(frames >= framesPerBall){
+        balls.add(new Ball(random(10,ballMaxSize),random(1,ballMaxSpeed)));
         frames = 0;
       }
     }

@@ -7,12 +7,10 @@ class Ball{
   
   public Ball(float size, float vBall){
     this.size = size;
-    x = size/2;
+    x = size;
     y = random(size/2, height - size/2);
-    vx = random(1,5);
-    //vy = random(-10,10);
+    vx = random(1,vBall);
     vy = sqrt(vBall*vBall - vx*vx);
-    //vx = sqrt(vBall*vBall - vy*vy);
   }
   
   public int move(){
