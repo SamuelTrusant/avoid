@@ -14,6 +14,7 @@ ArrayList<Ball> balls = new ArrayList<Ball>();
 boolean ShowMenu = true;
 boolean GameOver = false;
 boolean showFace = false;
+boolean invertCam = false;
 
 int framesPerBall = 180;
 int framesPerScore = 60;
@@ -65,7 +66,7 @@ void draw() {
     } else {
       textSize(15);
       textAlign(CENTER, CENTER);
-      text("Resiste todo lo que puedas sin que los objetos te den en la cara\nSi escondes la cara y no se detecta,\nlas esferas y la puntuación se pararán,\npuedes usar eso para reposicionarte\n\nPulsa 'r' para reiniciar el juego\n\nPulsa 'Enter' para empezar", width/2,height/2);
+      text("Resiste todo lo que puedas sin que los objetos te den en la cara\nSi escondes la cara y no se detecta,\nlas esferas y la puntuación se pararán,\npuedes usar eso para reposicionarte\n\nPulsa 'r' para reiniciar el juego\n\nPulsa 'Enter' para empezar\n\nSi en el juego quieres invertir la cámara pulsa 'c'", width/2,height/2);
     }  
    } else {
     if (cam.available()) {
@@ -76,13 +77,19 @@ void draw() {
       img.copy(cam, 0, 0, cam.width, cam.height, 
       0, 0, img.width, img.height);
       img.copyTo();
-     
+      
       //Imagen de grises
       Mat gris = img.getGrey();
       
-      //Imagen de entrada
-      image(img,0,0);
-      
+      if(invertCam){
+        pushMatrix();
+          scale(-1,1);
+          image(cam, -width, 0);
+        popMatrix();
+      } else {
+        //Imagen de entrada
+        image(img,0,0);
+      }
       //Detección y pintado de contenedores
       FaceDetect(gris);
       
@@ -131,8 +138,12 @@ void FaceDetect(Mat grey)
   noFill();
   stroke(255,0,0);
   strokeWeight(4);
-  for (Rect r : facesArr) {    
-    rect(r.x, r.y, r.width, r.height);   
+  for (Rect r : facesArr) { 
+    if(invertCam){
+      rect(width - r.width - r.x, r.y, r.width, r.height);
+    } else {
+      rect(r.x, r.y, r.width, r.height);
+    }
   }
   
   //comprobamos si hay alguna cara para parar o no el juego
@@ -195,15 +206,20 @@ void FaceDetect(Mat grey)
 }
 
 boolean checkBalls(Rect [] facesArr){
-    for (Ball ball : balls){
-      for(Rect r : facesArr){
-        //r.x es la esquina superior izquierda
-        if(ball.x + ball.size/2 >= r.x && ball.x-ball.size/2 <= r.x + r.width){
-          //return true;
-          if(ball.y + ball.size/2 >= r.y && ball.y - ball.size/2 <= r.y + r.height) return true;
-        }
+  float aux = 0;  
+  for (Ball ball : balls){
+    for(Rect r : facesArr){
+        
+      if(invertCam) {
+        aux =  width - r.width - r.x;
+      }  else {
+        aux = r.x;
+      }
+      if(ball.x + ball.size/2 >= aux && ball.x-ball.size/2 <= aux + r.width){
+        if(ball.y + ball.size/2 >= r.y && ball.y - ball.size/2 <= r.y + r.height) return true;
       }
     }
+  }
     
     return false;
 }
@@ -221,6 +237,9 @@ void keyPressed(){
     ShowMenu = false;
     GameOver = false;
     resetGame();
+  }
+  if(key == 'c'){
+    invertCam = !invertCam;
   }
   if(keyCode == ENTER){
     resetGame();
