@@ -1,4 +1,7 @@
 # Avoid Game
+Juego que utiliza webcam
+
+Autor: Samuel Trujillo Santana
 
 ## Descripción
 El programa es un juego que consiste en esquivar las pelotas en la pantalla con la cara. El juego, si no detecta caras, detiene las pelotas y el contador de puntos, lo cual te ayuda a reposisionarte y es una pausa en sí.
